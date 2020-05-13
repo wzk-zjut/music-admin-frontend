@@ -8,3 +8,12 @@ export function fetchList(params) {
         method: 'get'
     })
 }
+export function update(params) {
+    return request({
+        url: `${baseURL}/playlist/updatePlayList`,
+        data: {
+            ...params
+        },
+        method: 'post'
+    })
+}
