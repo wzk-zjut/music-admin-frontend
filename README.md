@@ -1,3 +1,3 @@
 # music-admin
-小程序后台管理
+云音乐社区小程序后台管理
 使用模版  vue-admin-template
