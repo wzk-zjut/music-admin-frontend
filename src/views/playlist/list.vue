@@ -1,56 +1,40 @@
 <template>
     <div>
-        <el-dialog title="编辑歌单"
-            :visible.sync="showEdit"
-            @close="closeEdit">
+        <el-dialog title="编辑歌单" :visible.sync="showEdit" @close="closeEdit">
             <el-form :model="editPlay">
-                <el-form-item label="歌单名称:"
-                    label-width="100px">
-                    <el-input
-                        v-model="editPlay.name">
+                <el-form-item label="歌单名称:" label-width="100px">
+                    <el-input v-model="editPlay.playName">
                     </el-input>
                 </el-form-item>
-                <el-form-item label="歌单描述:"
-                    label-width="100px">
-                    <el-input
-                        v-model="editPlay.copywriter">
+                <el-form-item label="歌单描述:" label-width="100px">
+                    <el-input v-model="editPlay.playWrite">
                     </el-input>
                 </el-form-item>
             </el-form>
-            <div slot="footer"
-                class="dialog-footer">
+            <div slot="footer" class="dialog-footer">
                 <el-button @click="closeEdit">取 消
                 </el-button>
-                <el-button type="primary"
-                    @click="updatePlay">确 定
+                <el-button type="primary" @click="updatePlay">确 定
                 </el-button>
             </div>
         </el-dialog>
-        <el-table v-loading="loading"
-            :data="playlist" stripe>
-            <el-table-column type="index"
-                width="50">
+        <el-table v-loading="loading" :data="playlist" stripe>
+            <el-table-column type="index" width="50">
             </el-table-column>
-            <el-table-column label="封面"
-                width="100">
+            <el-table-column label="封面" width="100">
                 <template slot-scope="scope">
-                    <img :src="scope.row.picUrl"
-                        alt="" height="50">
+                    <img :src="scope.row.picUrl" alt="" height="50">
                 </template>
             </el-table-column>
-            <el-table-column prop="name"
-                label="名称">
+            <el-table-column prop="name" label="名称">
             </el-table-column>
-            <el-table-column prop="copywriter"
-                label="描述"></el-table-column>
+            <el-table-column prop="copywriter" label="描述"></el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button size="mini"
-                        @click="editList(scope.row)">
+                    <el-button size="mini" @click="editList(scope.row)">
                         编辑
                     </el-button>
-                    <el-button size="mini"
-                        type="danger">删除
+                    <el-button size="mini" type="danger" @click="delList(scope.row._id)">删除
                     </el-button>
                 </template>
             </el-table-column>
@@ -59,7 +43,7 @@
 </template>
 
 <script>
-import { fetchList, update } from '@/api/playlist'
+import { fetchList, update, del } from '@/api/playlist'
 import scroll from '@/utils/scroll'
 export default {
     data() {
@@ -68,7 +52,11 @@ export default {
             count: 50,
             loading: false,
             showEdit: false,
-            editPlay: {}
+            editPlay: {
+                id: '',
+                playName: '',
+                playWrite: ''
+            }
         }
     },
     created() {
@@ -92,23 +80,55 @@ export default {
             })
         },
         editList(row) {
-            this.editPlay = row
+            this.editPlay.id = row._id
+            this.editPlay.playName = row.name;
+            this.editPlay.playWrite = row.copywriter
             this.showEdit = true
         },
         closeEdit() {
             this.showEdit = false;
-            this.editPlay = {}
+            this.editPlay = {
+                id: '',
+                playName: '',
+                playWrite: ''
+            }
         },
         updatePlay() {
-            update(this.editPlay).then((res) => {
-                if (res.data.errcode === 0) {
+            update({
+                _id: this.editPlay.id,
+                name: this.editPlay.playName,
+                copywriter: this.editPlay.playWrite
+            }).then((res) => {
+                if (res.data.modified > 0) {
                     this.$message.success('编辑成功')
                     this.closeEdit()
+                    this.playlist = []
                     this.getList()
                 } else {
                     this.$message.warning('编辑失败')
                 }
             }).catch((err) => {
+
+            })
+        },
+        delList(id) {
+            this.$confirm('确定删除此歌单吗?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                del({ id, }).then((res) => {
+                    if (res.data.deleted > 0) {
+                        this.$message.success('删除成功')
+                        this.playlist = []
+                        this.getList()
+                    } else {
+                        this.$message.warning('删除失败')
+                    }
+                }).catch(() => {
+
+                })
+            }).catch(() => {
 
             })
         }
