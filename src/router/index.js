@@ -50,7 +50,7 @@ export const constantRoutes = [{
         }]
     },
     {
-        path: '/list',
+        path: '/swiper',
         component: Layout,
         children: [{
             path: 'list',
