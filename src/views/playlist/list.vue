@@ -18,6 +18,11 @@
                 </el-button>
             </div>
         </el-dialog>
+        <el-input placeholder="请输入关键字" v-model="searchContent" style="width:300px" size="small"
+            clearable>
+        </el-input>
+        <el-button type="primary" style="margin-left:30px" size="small" @click="searchList">搜索
+        </el-button>
         <el-table v-loading="loading" :data="playlist" stripe>
             <el-table-column type="index" width="50">
             </el-table-column>
@@ -43,7 +48,7 @@
 </template>
 
 <script>
-import { fetchList, update, del } from '@/api/playlist'
+import { fetchList, update, del, search } from '@/api/playlist'
 import scroll from '@/utils/scroll'
 export default {
     data() {
@@ -52,6 +57,7 @@ export default {
             count: 50,
             loading: false,
             showEdit: false,
+            searchContent: '',
             editPlay: {
                 id: '',
                 playName: '',
@@ -103,7 +109,11 @@ export default {
                     this.$message.success('编辑成功')
                     this.closeEdit()
                     this.playlist = []
-                    this.getList()
+                    if (this.searchContent) {
+                        this.searchList()
+                    } else {
+                        this.getList()
+                    }
                 } else {
                     this.$message.warning('编辑失败')
                 }
@@ -121,7 +131,11 @@ export default {
                     if (res.data.deleted > 0) {
                         this.$message.success('删除成功')
                         this.playlist = []
-                        this.getList()
+                        if (this.searchContent) {
+                            this.searchList()
+                        } else {
+                            this.getList()
+                        }
                     } else {
                         this.$message.warning('删除失败')
                     }
@@ -131,6 +145,23 @@ export default {
             }).catch(() => {
 
             })
+        },
+        searchList() {
+            if (!this.searchContent) {
+                this.playlist = []
+                this.getList()
+                return
+            } else {
+                search({
+                    content: this.searchContent
+                }).then((res) => {
+                    if (res.data.length === 0) {
+                        this.$message.warning('未搜索到歌单')
+                        return
+                    }
+                    this.playlist = res.data
+                })
+            }
         }
     }
 }

@@ -24,3 +24,10 @@ export function del(params) {
         method: 'get'
     })
 }
+export function search(params) {
+    return request({
+        params,
+        url: `${baseURL}/playlist/searchList`,
+        method: 'get'
+    })
+}
